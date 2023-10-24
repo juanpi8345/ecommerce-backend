@@ -18,26 +18,23 @@ public class CartController {
         return cartServ.getCart(cartId);
     }
     @PostMapping("/create")
-    public String createCart(@RequestParam List<Long> productsCodes){
+    public void createCart(@RequestParam List<Long> productsCodes){
         cartServ.createCart(productsCodes);
-        return "Carrito creado correctamente";
     }
+
     @PostMapping("/{cartId}/addProduct/{productId}")
-    public String addProduct(@PathVariable Long productId, @PathVariable Long cartId){
+    public void addProduct(@PathVariable Long productId, @PathVariable Long cartId){
         cartServ.addProduct(cartId,productId);
-        return "Producto añadido correctamente";
     }
 
     @DeleteMapping("/{cartId}/deleteProduct/{productId}")
-    public String deleteProduct(@PathVariable Long productId, @PathVariable Long cartId){
+    public void deleteProduct(@PathVariable Long productId, @PathVariable Long cartId){
         cartServ.deleteProduct(cartId,productId);
-        return "Producto eliminado correctamente";
     }
 
     @DeleteMapping("/delete/{cartId}")
-    public String deleteCart(@PathVariable Long cartId){
+    public void deleteCart(@PathVariable Long cartId){
         cartServ.deleteCart(cartId);
-        return "Carrito eliminado correctamente";
     }
 
 

@@ -1,4 +1,4 @@
-package com.proyectofinal.sales.model;
+package com.ecommerce.admin.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -6,21 +6,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
 @Entity
 @Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Sale {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Temporal(TemporalType.DATE)
-    private LocalDate date;
-    private String type;
-    private boolean paid;
-    private boolean ready;
-    private Long cartId;
-    private Long usuarioId;
+    @Column(nullable = false)
+    private String username;
+    @Column(nullable = false)
+    private String password;
+    private String email;
+    private String rol;
 }

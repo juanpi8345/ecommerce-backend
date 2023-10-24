@@ -31,6 +31,7 @@ public class CartService implements  ICartService {
         if(pr != null && cart!= null){
             cart.getProductsCodes().add(pr.getCode());
             cart.setTotal(this.calculateTotal(cart));
+            cart.setSize(cart.getSize()+1);
             cartRepo.save(cart);
         }
     }
@@ -43,6 +44,7 @@ public class CartService implements  ICartService {
         if(pr != null & cart!= null){
             cart.getProductsCodes().remove(productCode);
             cart.setTotal(this.calculateTotal(cart));
+            cart.setSize(cart.getSize()-1);
             cartRepo.save(cart);
         }
     }

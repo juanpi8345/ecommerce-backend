@@ -18,6 +18,7 @@ public class Cart {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private long total;
+    private Long size = 0L;
     @ElementCollection(fetch = FetchType.LAZY)
     private List<Long> productsCodes;
 }

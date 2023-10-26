@@ -10,6 +10,7 @@ public interface IProductService {
 
     void editProduct(Product pr);
     Page<Product> getAll(int page, int pageSize,String sortField);
+    List<Product> getAll();
 
     List<Product> searchProducts(String query);
     Product getProductByCode(Long code);

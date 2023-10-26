@@ -9,6 +9,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter @Setter
 public class UserDTO {
-    private String username;
+    private String dni;
     private String password;
 }

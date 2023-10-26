@@ -1,24 +1,24 @@
-package com.proyectofinal.cart.model;
+package com.proyectofinal.sales.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Fetch;
-
-import java.util.List;
 
 @Entity
 @Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Cart {
+public class Residence {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private long total;
-    private Long size = 0L;
-    @ElementCollection(fetch = FetchType.LAZY)
-    private List<Long> productsCodes;
+    private String province;
+    private String locality;
+    private String street;
+    private long residenceNumber;
+    @OneToOne
+    @JoinColumn(name = "id")
+    private Sale sale;
 }

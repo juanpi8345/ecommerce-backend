@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Getter @Setter
@@ -18,9 +19,13 @@ public class Sale {
     private Long id;
     @Temporal(TemporalType.DATE)
     private LocalDate date;
-    private String type;
     private boolean paid;
     private boolean ready;
-    private Long cartId;
-    private Long usuarioId;
+    private long total;
+    @ElementCollection(fetch = FetchType.LAZY)
+    private List<Long> productsId;
+    private String userDni;
+    private String type;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "sale",optional = true)
+    private Residence residence;
 }

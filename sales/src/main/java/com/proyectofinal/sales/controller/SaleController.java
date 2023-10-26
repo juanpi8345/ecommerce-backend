@@ -1,9 +1,11 @@
 package com.proyectofinal.sales.controller;
 
 import com.proyectofinal.sales.dto.SaleDTO;
+import com.proyectofinal.sales.model.Sale;
 import com.proyectofinal.sales.service.ISaleService;
 import jakarta.ws.rs.Path;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,10 +26,10 @@ public class SaleController {
         return saleServ.getSale(saleId);
     }
 
-    @PostMapping("/add/cart/{cartId}")
-    public String addSale(@PathVariable Long cartId){
-        saleServ.saveSale(cartId);
-        return "Venta guardada correctamente";
+    @PostMapping("/add")
+    public ResponseEntity<?> addSale(@RequestBody Sale sale) {
+        saleServ.saveSale(sale);
+        return ResponseEntity.ok().build();
     }
 
 

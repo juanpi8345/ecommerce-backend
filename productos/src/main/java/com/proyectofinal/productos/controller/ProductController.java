@@ -24,8 +24,13 @@ public class ProductController {
         return productServ.getProductByCode(productCode);
     }
 
+    @GetMapping("/getAll")
+    public List<Product> getAllProducts(){
+        return productServ.getAll();
+    }
+
     @GetMapping("/get")
-    public Page<Product> getAll(@RequestParam(name = "page", defaultValue = "0") int page,
+    public Page<Product> getAllPaginated(@RequestParam(name = "page", defaultValue = "0") int page,
                                 @RequestParam(defaultValue = "name") String sortField){
         System.out.println("Port: "+serverPort);
         return productServ.getAll(page,6,sortField);

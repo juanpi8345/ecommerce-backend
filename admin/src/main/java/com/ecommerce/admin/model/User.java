@@ -1,5 +1,6 @@
 package com.ecommerce.admin.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,10 +15,13 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
-    private String username;
+    private String name;
+    private String lastname;
+    @Column(nullable = false, unique = true)
+    private String dni;
     @Column(nullable = false)
     private String password;
     private String email;
-    private String rol;
+    @JsonIgnore
+    private String role;
 }

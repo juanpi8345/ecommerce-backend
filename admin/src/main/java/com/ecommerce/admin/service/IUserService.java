@@ -7,7 +7,10 @@ import java.util.Optional;
 public interface IUserService {
     User getUser(Long id);
     void createUser(User user);
-    Optional<User> validateUser(String username, String password);
+    User validateUser(String username, String password);
+    User findUserByDni(String dni);
+
+    User findUserByEmail(String email);
 
 
 }

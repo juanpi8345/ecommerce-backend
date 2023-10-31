@@ -20,6 +20,7 @@ public class SaleDTO {
     private List<ProductDTO> products;
     private boolean paid;
     private boolean ready;
+    private boolean completed;
     private Long total;
     private UserDTO user;
     private String type;

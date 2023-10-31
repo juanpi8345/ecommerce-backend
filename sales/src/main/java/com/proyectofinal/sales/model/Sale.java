@@ -23,9 +23,11 @@ public class Sale {
     private boolean ready;
     private long total;
     @ElementCollection(fetch = FetchType.LAZY)
-    private List<Long> productsId;
+    private List<Long> productsId ;
     private String userDni;
     private String type;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "sale",optional = true)
+    private boolean completed;
+    @ManyToOne
+    @JoinColumn(name = "residenceId",nullable = true)
     private Residence residence;
 }

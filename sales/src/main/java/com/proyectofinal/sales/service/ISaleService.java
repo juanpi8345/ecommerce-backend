@@ -13,4 +13,5 @@ public interface ISaleService {
 
     UserDTO getUser(String dni);
     List<SaleDTO> getAllSales();
+    List<SaleDTO> getAllSalesByUserDni(String userDni);
 }

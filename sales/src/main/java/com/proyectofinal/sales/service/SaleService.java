@@ -3,8 +3,10 @@ package com.proyectofinal.sales.service;
 import com.proyectofinal.sales.dto.ProductDTO;
 import com.proyectofinal.sales.dto.SaleDTO;
 import com.proyectofinal.sales.dto.UserDTO;
+import com.proyectofinal.sales.model.Residence;
 import com.proyectofinal.sales.model.Sale;
 import com.proyectofinal.sales.repository.IProductAPI;
+import com.proyectofinal.sales.repository.IResidenceRepository;
 import com.proyectofinal.sales.repository.ISaleRepository;
 import com.proyectofinal.sales.repository.IUserAPI;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -23,6 +25,9 @@ public class SaleService implements ISaleService{
     private ISaleRepository saleRepo;
 
     @Autowired
+    private IResidenceRepository residenceRepo;
+
+    @Autowired
     private IProductAPI productApi;
 
     @Autowired
@@ -32,21 +37,31 @@ public class SaleService implements ISaleService{
     @CircuitBreaker(name = "product-service",fallbackMethod = "fallBack")
     @Retry(name="product-service")
     public void saveSale(Sale sale) {
-        List<Long> filterList = new ArrayList<Long>();
         UserDTO us = this.getUser(sale.getUserDni());
         if(us != null){
             for(Long prId : sale.getProductsId()){
                 ProductDTO pr = productApi.getProductById(prId);
                 if(pr != null){
-                    filterList.add(pr.getCode());
                     sale.setTotal(sale.getTotal()+ pr.getPrice());
                 }
             }
             if(!sale.getProductsId().isEmpty()){
-                sale.setProductsId(filterList);
                 sale.setDate(LocalDate.now());
                 sale.setPaid(false);
                 sale.setReady(false);
+                sale.setCompleted(false);
+                if(sale.getType().equalsIgnoreCase("Envio a domicilio")){
+                    Residence existingResidence = residenceRepo.
+                            findByProvinceAndLocalityAndStreetAndResidenceNumber(sale.getResidence().getProvince()
+                                    ,sale.getResidence().getLocality(),sale.getResidence().getStreet(),
+                                    sale.getResidence().getResidenceNumber());
+                    if(existingResidence != null)
+                        sale.setResidence(existingResidence);
+                    else
+                        residenceRepo.save(sale.getResidence());
+                }
+                else
+                    sale.setResidence(null);
                 saleRepo.save(sale);
             }
         }
@@ -64,13 +79,13 @@ public class SaleService implements ISaleService{
     public SaleDTO getSale(Long saleId) {
         List<ProductDTO> products = new ArrayList<ProductDTO>();
         Sale sale  = saleRepo.findById(saleId).orElse(null);
-        for(Long prId:sale.getProductsId()){
-            ProductDTO pr = productApi.getProductById(prId);
-            products.add(pr);
-        }
-
         SaleDTO saleResponse = new SaleDTO();
         if(sale != null){
+            for(Long prId : sale.getProductsId()){
+                ProductDTO pr = productApi.getProductById(prId);
+                products.add(pr);
+            }
+
             UserDTO user = this.getUser(sale.getUserDni());
             saleResponse.setId(sale.getId());
             saleResponse.setDate(sale.getDate());
@@ -78,6 +93,7 @@ public class SaleService implements ISaleService{
             saleResponse.setTotal(sale.getTotal());
             saleResponse.setPaid(sale.isPaid());
             saleResponse.setReady(sale.isReady());
+            saleResponse.setCompleted(sale.isCompleted());
             saleResponse.setUser(user);
             saleResponse.setType(sale.getType());
             saleResponse.setResidence(sale.getResidence());
@@ -98,6 +114,17 @@ public class SaleService implements ISaleService{
     @Retry(name="products-service")
     public List<SaleDTO> getAllSales() {
         List<Sale> sales = saleRepo.findAll();
+        List<SaleDTO> salesResponse = new ArrayList<SaleDTO>();
+        for(Sale sale : sales){
+            SaleDTO saleDTO = this.getSale(sale.getId());
+            salesResponse.add(saleDTO);
+        }
+        return salesResponse;
+    }
+
+    @Override
+    public List<SaleDTO> getAllSalesByUserDni(String userDni) {
+        List<Sale> sales = saleRepo.findAllByUserDni(userDni);
         List<SaleDTO> salesResponse = new ArrayList<SaleDTO>();
         for(Sale sale : sales){
             SaleDTO saleDTO = this.getSale(sale.getId());

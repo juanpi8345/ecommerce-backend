@@ -21,6 +21,11 @@ public class SaleController {
         return saleServ.getAllSales();
     }
 
+    @GetMapping("/get/user/{userDni}")
+    public List<SaleDTO> getAllUserSales(@PathVariable String userDni){
+        return saleServ.getAllSalesByUserDni(userDni);
+    }
+
     @GetMapping("/get/{saleId}")
     public SaleDTO getSale(@PathVariable Long saleId){
         return saleServ.getSale(saleId);

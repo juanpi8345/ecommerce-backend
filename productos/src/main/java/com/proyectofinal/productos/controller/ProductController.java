@@ -50,6 +50,14 @@ public class ProductController {
         productServ.editProduct(product);
     }
 
+    @PutMapping("/reduceStock/{productCode}")
+    public void reduceStock(@PathVariable Long productCode){
+        Product pr = productServ.getProductByCode(productCode);
+        if(pr != null)
+            pr.setStock(pr.getStock()-1);
+        productServ.saveProduct(pr);
+    }
+
     @DeleteMapping("/delete/{productCode}")
     public void deleteProduct(@PathVariable Long productCode){
         productServ.deleteProductByCode(productCode);

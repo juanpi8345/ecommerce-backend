@@ -1,5 +1,6 @@
 package com.proyectofinal.sales.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -16,7 +18,7 @@ import java.util.List;
 public class Sale {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long saleId;
     @Temporal(TemporalType.DATE)
     private LocalDate date;
     private boolean paid;
@@ -30,4 +32,12 @@ public class Sale {
     @ManyToOne
     @JoinColumn(name = "residenceId",nullable = true)
     private Residence residence;
+
+    /*
+        this is a products copy because of its can be updated or deleted and we dont want products on a sale
+        can be updated, or deleted, we prefer hold prices, and products.
+     */
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "sale")
+    @JsonIgnore
+    private List<ProductOnSale> products = new ArrayList<ProductOnSale>();
 }

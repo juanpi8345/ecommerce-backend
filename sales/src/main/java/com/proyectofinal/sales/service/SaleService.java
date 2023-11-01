@@ -3,12 +3,10 @@ package com.proyectofinal.sales.service;
 import com.proyectofinal.sales.dto.ProductDTO;
 import com.proyectofinal.sales.dto.SaleDTO;
 import com.proyectofinal.sales.dto.UserDTO;
+import com.proyectofinal.sales.model.ProductOnSale;
 import com.proyectofinal.sales.model.Residence;
 import com.proyectofinal.sales.model.Sale;
-import com.proyectofinal.sales.repository.IProductAPI;
-import com.proyectofinal.sales.repository.IResidenceRepository;
-import com.proyectofinal.sales.repository.ISaleRepository;
-import com.proyectofinal.sales.repository.IUserAPI;
+import com.proyectofinal.sales.repository.*;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,41 +29,47 @@ public class SaleService implements ISaleService{
     private IProductAPI productApi;
 
     @Autowired
+    private IProductSaleRepository productOnSaleRepo;
+
+    @Autowired
     private IUserAPI userApi;
 
     @Override
     @CircuitBreaker(name = "product-service",fallbackMethod = "fallBack")
     @Retry(name="product-service")
     public void saveSale(Sale sale) {
-        UserDTO us = this.getUser(sale.getUserDni());
-        if(us != null){
-            for(Long prId : sale.getProductsId()){
-                ProductDTO pr = productApi.getProductById(prId);
-                if(pr != null){
-                    sale.setTotal(sale.getTotal()+ pr.getPrice());
+        UserDTO user = this.getUser(sale.getUserDni());
+
+        if (user != null) {
+            sale.setDate(LocalDate.now());
+            sale.setPaid(false);
+            sale.setReady(false);
+            sale.setCompleted(false);
+
+            if (sale.getType().equalsIgnoreCase("Envio a domicilio")) {
+                Residence existingResidence = residenceRepo.findByProvinceAndLocalityAndStreetAndResidenceNumber(
+                        sale.getResidence().getProvince(), sale.getResidence().getLocality(),
+                        sale.getResidence().getStreet(), sale.getResidence().getResidenceNumber());
+                if (existingResidence != null) {
+                    sale.setResidence(existingResidence);
+                } else {
+                    residenceRepo.save(sale.getResidence());
                 }
+            } else {
+                sale.setResidence(null);
             }
-            if(!sale.getProductsId().isEmpty()){
-                sale.setDate(LocalDate.now());
-                sale.setPaid(false);
-                sale.setReady(false);
-                sale.setCompleted(false);
-                if(sale.getType().equalsIgnoreCase("Envio a domicilio")){
-                    Residence existingResidence = residenceRepo.
-                            findByProvinceAndLocalityAndStreetAndResidenceNumber(sale.getResidence().getProvince()
-                                    ,sale.getResidence().getLocality(),sale.getResidence().getStreet(),
-                                    sale.getResidence().getResidenceNumber());
-                    if(existingResidence != null)
-                        sale.setResidence(existingResidence);
-                    else
-                        residenceRepo.save(sale.getResidence());
+
+            saleRepo.save(sale);
+            for (Long prId : sale.getProductsId()) {
+                ProductDTO pr = productApi.getProductById(prId);
+                if (pr != null) {
+                    productApi.reduceStock(pr.getCode());
+                    sale.setTotal(sale.getTotal() + pr.getPrice());
+                    ProductOnSale productOnSale = new ProductOnSale(null,pr.getCode(), pr.getName(), pr.getPrice(), sale);
+                    productOnSaleRepo.save(productOnSale);
                 }
-                else
-                    sale.setResidence(null);
-                saleRepo.save(sale);
             }
         }
-
     }
 
     @Override
@@ -77,17 +81,16 @@ public class SaleService implements ISaleService{
     @CircuitBreaker(name = "product-service",fallbackMethod = "fallBack")
     @Retry(name="product-service")
     public SaleDTO getSale(Long saleId) {
-        List<ProductDTO> products = new ArrayList<ProductDTO>();
         Sale sale  = saleRepo.findById(saleId).orElse(null);
         SaleDTO saleResponse = new SaleDTO();
+        List<ProductDTO> products = new ArrayList<ProductDTO>();
+        for(ProductOnSale pr : sale.getProducts()){
+            ProductDTO prDTO = new ProductDTO(pr.getProductCode(),pr.getProductName(),pr.getPrice());
+            products.add(prDTO);
+        }
         if(sale != null){
-            for(Long prId : sale.getProductsId()){
-                ProductDTO pr = productApi.getProductById(prId);
-                products.add(pr);
-            }
-
             UserDTO user = this.getUser(sale.getUserDni());
-            saleResponse.setId(sale.getId());
+            saleResponse.setId(sale.getSaleId());
             saleResponse.setDate(sale.getDate());
             saleResponse.setProducts(products);
             saleResponse.setTotal(sale.getTotal());
@@ -116,7 +119,7 @@ public class SaleService implements ISaleService{
         List<Sale> sales = saleRepo.findAll();
         List<SaleDTO> salesResponse = new ArrayList<SaleDTO>();
         for(Sale sale : sales){
-            SaleDTO saleDTO = this.getSale(sale.getId());
+            SaleDTO saleDTO = this.getSale(sale.getSaleId());
             salesResponse.add(saleDTO);
         }
         return salesResponse;
@@ -127,7 +130,7 @@ public class SaleService implements ISaleService{
         List<Sale> sales = saleRepo.findAllByUserDni(userDni);
         List<SaleDTO> salesResponse = new ArrayList<SaleDTO>();
         for(Sale sale : sales){
-            SaleDTO saleDTO = this.getSale(sale.getId());
+            SaleDTO saleDTO = this.getSale(sale.getSaleId());
             salesResponse.add(saleDTO);
         }
         return salesResponse;

@@ -4,6 +4,9 @@ import com.ecommerce.admin.model.User;
 import com.ecommerce.admin.repository.IUserRepository;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,6 +46,17 @@ public class UserService implements IUserService{
     }
 
     @Override
+    public void saveUser(User user) {
+        userRepo.save(user);
+    }
+
+    @Override
+    public Page<User> findAllUserPaginated(int page, int pageSize, String sortField) {
+        PageRequest pagerequest = PageRequest.of(page,pageSize, Sort.by(sortField));
+        return userRepo.findAll(pagerequest);
+    }
+
+    @Override
     public List<User> findAll() {
         return userRepo.findAll();
     }
@@ -50,6 +64,11 @@ public class UserService implements IUserService{
     @Override
     public User findUserByEmail(String email) {
         return userRepo.findUserByEmail(email);
+    }
+
+    @Override
+    public List<User> searchUsers(String query) {
+        return userRepo.findByDniContaining(query);
     }
 
 

@@ -5,6 +5,7 @@ import com.ecommerce.admin.dto.UserDTO;
 import com.ecommerce.admin.model.User;
 import com.ecommerce.admin.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,8 +23,14 @@ public class UserController {
     private IUserService userServ;
 
     @GetMapping("/get")
-    public List<User> getUsers(){
-        return userServ.findAll();
+    public Page<User> getUsers(@RequestParam(name = "page", defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "dni") String sortField){
+        return userServ.findAllUserPaginated(page,15,sortField);
+    }
+
+    @GetMapping("/search")
+    public List<User> searchUsers(@RequestParam("query") String query){
+        return userServ.searchUsers(query);
     }
 
     @GetMapping("/{dni}/getRole")
@@ -82,6 +89,19 @@ public class UserController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+    }
+
+    @PutMapping("/changeRole/user/{userId}")
+    public void changeRoleToAdmin(@PathVariable Long userId){
+        User user = userServ.getUser(userId);
+        if(user != null){
+            if(user.getRole().equals("USER"))
+                user.setRole("ADMIN");
+            else
+                user.setRole("USER");
+            userServ.saveUser(user);
+        }
+
     }
 
 }

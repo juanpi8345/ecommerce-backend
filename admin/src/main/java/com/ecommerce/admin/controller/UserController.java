@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -19,6 +20,11 @@ public class UserController {
 
     @Autowired
     private IUserService userServ;
+
+    @GetMapping("/get")
+    public List<User> getUsers(){
+        return userServ.findAll();
+    }
 
     @GetMapping("/{dni}/getRole")
     public Map<String,String> getUserRol(@PathVariable String dni){
@@ -61,6 +67,8 @@ public class UserController {
         }
         return ResponseEntity.notFound().build();
     }
+
+
     @PostMapping("/register")
     public void register(@RequestBody User user){
         userServ.createUser(user);

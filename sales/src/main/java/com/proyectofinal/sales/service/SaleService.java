@@ -10,8 +10,12 @@ import com.proyectofinal.sales.repository.*;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.awt.print.Pageable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,12 +39,18 @@ public class SaleService implements ISaleService{
     private IUserAPI userApi;
 
     @Override
+    public Sale getNormalSale(Long saleId){
+        return saleRepo.findById(saleId).orElse(null);
+    }
+
+    @Override
     @CircuitBreaker(name = "product-service",fallbackMethod = "fallBack")
     @Retry(name="product-service")
     public void saveSale(Sale sale) {
         UserDTO user = this.getUser(sale.getUserDni());
+        int userSalesWithoutComplete = saleRepo.findByUserDniAndCompletedFalse(user.getDni()).size();
 
-        if (user != null) {
+        if (user != null && userSalesWithoutComplete< 4) {
             sale.setDate(LocalDate.now());
             sale.setPaid(false);
             sale.setReady(false);
@@ -111,6 +121,10 @@ public class SaleService implements ISaleService{
         return userApi.findByDni(dni).getBody();
     }
 
+    @Override
+    public List<Sale> searchSales(String query){
+        return saleRepo.findByUserDniContaining(query);
+    }
 
     @Override
     @CircuitBreaker(name = "products-service",fallbackMethod = "fallBack")
@@ -134,6 +148,27 @@ public class SaleService implements ISaleService{
             salesResponse.add(saleDTO);
         }
         return salesResponse;
+    }
+
+    @Override
+    public void updateSale(Sale sale) {
+        saleRepo.save(sale);
+    }
+
+    @Override
+    public Page<Sale> getAllPaginated(int page, int pageSize, String sortField) {
+        PageRequest pageRequest = PageRequest.of(page, pageSize, Sort.by(sortField).descending());
+        return saleRepo.findAll(pageRequest);
+    }
+
+    @Override
+    public Page<Sale> getAllNotCompletedPaginated(PageRequest pageRequest) {
+        return saleRepo.findByCompletedFalse(pageRequest);
+    }
+
+    @Override
+    public List<Sale> findByUserDniAndCompletedFalse(String userDni) {
+        return saleRepo.findByUserDniAndCompletedFalse(userDni);
     }
 
     public void fallback(Throwable throwable){

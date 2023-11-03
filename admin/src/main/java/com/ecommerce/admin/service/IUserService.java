@@ -2,6 +2,7 @@ package com.ecommerce.admin.service;
 
 import com.ecommerce.admin.model.User;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface IUserService {
@@ -10,6 +11,7 @@ public interface IUserService {
     User validateUser(String username, String password);
     User findUserByDni(String dni);
 
+    List<User> findAll();
     User findUserByEmail(String email);
 
 

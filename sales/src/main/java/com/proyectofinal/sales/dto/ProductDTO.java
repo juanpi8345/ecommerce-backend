@@ -14,5 +14,7 @@ public class ProductDTO {
     private Long code;
     private String name;
     private Long price;
+    private boolean hasDiscount;
+    private int percentageDiscount;
 }
 

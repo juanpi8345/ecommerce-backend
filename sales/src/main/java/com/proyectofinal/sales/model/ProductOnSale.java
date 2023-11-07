@@ -20,4 +20,6 @@ public class ProductOnSale {
     @ManyToOne
     @JoinColumn(name = "saleId")
     private Sale sale;
+    private boolean hasDescount;
+    private int percentageDiscount;
 }

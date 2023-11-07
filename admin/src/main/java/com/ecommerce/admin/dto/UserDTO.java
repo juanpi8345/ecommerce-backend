@@ -15,4 +15,6 @@ public class UserDTO {
     private String lastname;
     private String role;
     private String password;
+    private boolean verificated;
+    private String verticationCode;
 }

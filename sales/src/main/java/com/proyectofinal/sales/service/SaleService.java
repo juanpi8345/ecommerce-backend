@@ -44,6 +44,15 @@ public class SaleService implements ISaleService{
     }
 
     @Override
+    public long calculatePriceWithDescount(ProductDTO pr) {
+        long price = pr.getPrice();
+        if(pr.isHasDiscount()){
+            price = (price) - (price*pr.getPercentageDiscount())/100;
+        }
+        return price;
+    }
+
+    @Override
     @CircuitBreaker(name = "product-service",fallbackMethod = "fallBack")
     @Retry(name="product-service")
     public void saveSale(Sale sale) {
@@ -74,8 +83,8 @@ public class SaleService implements ISaleService{
                 ProductDTO pr = productApi.getProductById(prId);
                 if (pr != null) {
                     productApi.reduceStock(pr.getCode());
-                    sale.setTotal(sale.getTotal() + pr.getPrice());
-                    ProductOnSale productOnSale = new ProductOnSale(null,pr.getCode(), pr.getName(), pr.getPrice(), sale);
+                    sale.setTotal(sale.getTotal() + this.calculatePriceWithDescount(pr));
+                    ProductOnSale productOnSale = new ProductOnSale(null,pr.getCode(), pr.getName(), this.calculatePriceWithDescount(pr),sale,pr.isHasDiscount(),pr.getPercentageDiscount());
                     productOnSaleRepo.save(productOnSale);
                 }
             }
@@ -95,7 +104,7 @@ public class SaleService implements ISaleService{
         SaleDTO saleResponse = new SaleDTO();
         List<ProductDTO> products = new ArrayList<ProductDTO>();
         for(ProductOnSale pr : sale.getProducts()){
-            ProductDTO prDTO = new ProductDTO(pr.getProductCode(),pr.getProductName(),pr.getPrice());
+            ProductDTO prDTO = new ProductDTO(pr.getProductCode(),pr.getProductName(),pr.getPrice(),pr.isHasDescount(),pr.getPercentageDiscount());
             products.add(prDTO);
         }
         if(sale != null){

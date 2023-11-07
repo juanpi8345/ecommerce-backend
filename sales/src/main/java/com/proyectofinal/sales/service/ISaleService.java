@@ -1,5 +1,6 @@
 package com.proyectofinal.sales.service;
 
+import com.proyectofinal.sales.dto.ProductDTO;
 import com.proyectofinal.sales.dto.SaleDTO;
 import com.proyectofinal.sales.dto.UserDTO;
 import com.proyectofinal.sales.model.Sale;
@@ -10,6 +11,7 @@ import java.awt.print.Pageable;
 import java.util.List;
 
 public interface ISaleService {
+    long calculatePriceWithDescount(ProductDTO pr);
     void saveSale(Sale sale);
     void deleteSale(Long saleId);
     SaleDTO getSale(Long saleId);

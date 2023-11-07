@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class UserService implements IUserService{
@@ -28,6 +29,8 @@ public class UserService implements IUserService{
         user.setRole("USER");
         String password = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
         user.setPassword(password);
+        user.setVerificated(false);
+        user.setVerticationCode(this.generateCode());
         userRepo.save(user);
     }
 
@@ -43,6 +46,21 @@ public class UserService implements IUserService{
     @Override
     public User findUserByDni(String dni) {
         return userRepo.findUserByDni(dni);
+    }
+
+    @Override
+    public String generateCode() {
+        String digits = "0123456789";
+        Random random = new Random();
+        StringBuilder code = new StringBuilder();
+
+        for (int i = 0; i < 7; i++) {
+            int randomIndex = random.nextInt(digits.length());
+            char randomDigit = digits.charAt(randomIndex);
+            code.append(randomDigit);
+        }
+
+        return code.toString();
     }
 
     @Override
@@ -64,6 +82,11 @@ public class UserService implements IUserService{
     @Override
     public User findUserByEmail(String email) {
         return userRepo.findUserByEmail(email);
+    }
+
+    @Override
+    public boolean verificateCode(String code) {
+        return false;
     }
 
     @Override

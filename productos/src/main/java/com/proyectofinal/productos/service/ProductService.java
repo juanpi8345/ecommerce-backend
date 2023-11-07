@@ -31,6 +31,8 @@ public class ProductService implements IProductService {
             p.setDescription(pr.getDescription());
             p.setImgUrl(pr.getImgUrl());
             p.setStock(pr.getStock());
+            p.setHasDiscount(pr.isHasDiscount());
+            p.setPercentageDiscount(pr.getPercentageDiscount());
             productRepo.save(p);
         }
     }

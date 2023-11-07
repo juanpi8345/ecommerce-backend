@@ -12,12 +12,14 @@ public interface IUserService {
     User validateUser(String username, String password);
     User findUserByDni(String dni);
 
+    String generateCode();
     void saveUser(User user);
 
     Page<User> findAllUserPaginated(int page, int pageSize, String sortField);
     List<User> findAll();
     User findUserByEmail(String email);
 
+    boolean verificateCode(String code);
     List<User> searchUsers(String query);
 
 
